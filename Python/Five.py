@@ -9,8 +9,8 @@ from itertools import *
 import matplotlib.pyplot as plt
 
 def main():
-    s_date = dt.datetime(2010, 1, 1)
-    e_date = dt.datetime(2011, 1, 1)
+    s_date = dt.datetime(2008, 1, 2)
+    e_date = dt.datetime(2008, 2, 1)
     lookback = 20
     print "Reading data..."
     data, symbols, timestamps = setup(s_date, e_date, lookback)
@@ -38,10 +38,12 @@ def create_plots(syms, data, ub, lb, ib):
     plt.savefig('figure.pdf', format='pdf')
 
 def bol_band(data, syms, timestamps, lookback, s_date):
-    prices = data['close'][syms[0]]
-    actual_start = s_date + dt.timedelta(days=lookback)
-    rm = pd.rolling_mean(prices, lookback).truncate(before=actual_start)
-    rstd = pd.rolling_std(prices, lookback).truncate(before=actual_start)
+    for sym in syms:
+        prices = data['close'][sym]
+        actual_start = s_date + dt.timedelta(days=lookback)
+        rm = pd.rolling_mean(prices, lookback).truncate(before=actual_start)
+        rstd = pd.rolling_std(prices, lookback).truncate(before=actual_start)
+        print rstd
     upper_bol_vals = []
     lower_bol_vals = []
     indicator_bol_vals = []
@@ -54,7 +56,9 @@ def bol_band(data, syms, timestamps, lookback, s_date):
         lower_bol_vals.append(lower_bol_val)
         indicator_bol_vals.append(indicator_bol_val)
 
-    return pd.DataFrame(upper_bol_vals, index=rm.index), pd.DataFrame(lower_bol_vals, index=rm.index), pd.DataFrame(indicator_bol_vals, index=rm.index)
+    return pd.DataFrame(upper_bol_vals, index=rm.index) \
+          ,pd.DataFrame(lower_bol_vals, index=rm.index) \
+          ,pd.DataFrame(indicator_bol_vals, index=rm.index)
 
 def setup(s_date, e_date, lookback):
     time_of_day = dt.timedelta(hours=16)
@@ -64,7 +68,7 @@ def setup(s_date, e_date, lookback):
 
 def read_data(timestamps):
     data_obj = da.DataAccess('Yahoo')
-    symbols = ['GOOG']
+    symbols = ['GOOG', 'AAPL']
     keys = ['close']
     all_data = data_obj.get_data(timestamps, symbols, keys)
 
