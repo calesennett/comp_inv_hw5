@@ -15,6 +15,7 @@ def main():
     print "Reading data..."
     data, symbols, timestamps = setup(s_date, e_date, lookback)
     upper_bol, lower_bol, indicator_bol = bol_band(data, symbols, timestamps, lookback, s_date)
+    print indicator_bol
     create_plots(symbols, data, upper_bol, lower_bol, indicator_bol)
 
 def create_plots(syms, data, ub, lb, ib):
@@ -43,7 +44,6 @@ def bol_band(data, syms, timestamps, lookback, s_date):
         actual_start = s_date + dt.timedelta(days=lookback)
         rm = pd.rolling_mean(prices, lookback).truncate(before=actual_start)
         rstd = pd.rolling_std(prices, lookback).truncate(before=actual_start)
-        print rstd
     upper_bol_vals = []
     lower_bol_vals = []
     indicator_bol_vals = []
@@ -62,13 +62,13 @@ def bol_band(data, syms, timestamps, lookback, s_date):
 
 def setup(s_date, e_date, lookback):
     time_of_day = dt.timedelta(hours=16)
-    timestamps = du.getNYSEdays(s_date - dt.timedelta(days=lookback-10), e_date, time_of_day)
+    timestamps = du.getNYSEdays(s_date - dt.timedelta(days=lookback+10), e_date, time_of_day)
     data, symbols = read_data(timestamps)
     return data, symbols, timestamps
 
 def read_data(timestamps):
     data_obj = da.DataAccess('Yahoo')
-    symbols = ['GOOG', 'AAPL']
+    symbols = ['GOOG']
     keys = ['close']
     all_data = data_obj.get_data(timestamps, symbols, keys)
 

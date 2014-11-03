@@ -13,17 +13,25 @@ main =  do
         let sd = "2008-01-02"
             ed = "2008-01-31"
             lb = 20
-            syms = ["GOOG", "AAPL"]
-        p <- mapM (DP.readFrom sd ed lb lb) syms
+            syms = ["GOOG"]
+        p <- mapM (DP.readFrom sd ed 0 lb) syms
         let p_data = Map.fromList p
             sma_data = Map.map (DP.slice lb end) $ Map.map (moving_average lb) p_data
-                where end = (length $ head $ Map.elems p_data) - lb
+                where end = (length $ head $ Map.elems p_data) - 1
             mstd_data = Map.map (moving_std lb) p_data
-        print mstd_data
+            bol_data = Map.mapWithKey (bol_band p_data mstd_data) sma_data
+        print bol_data
+
+bol_band :: Map.Map String [Double] -> Map.Map String [Double] -> String -> [Double] -> [Double]
+bol_band _ _ _ [] = []
+bol_band prices rstd sym sma = [(price - sma_val) / (rstd_val)] ++ bol_band (Map.map tail prices) (Map.map tail rstd) sym (tail sma)
+                               where    price = head $ fromMaybe [0.0] $ Map.lookup sym prices
+                                        sma_val = head sma
+                                        rstd_val = head $ fromMaybe [0.0] $ Map.lookup sym rstd
 
 moving_std :: Int -> [Double] -> [Double]
 moving_std n prices
-    | length prices < n*2 = []
+    | length (take n prices) < n = []
     | otherwise  = [Stats.stddev $ take n prices] ++ moving_std n (tail prices)
 
 --moving_std :: Int -> Map.Map String [Double] -> String -> [Double] -> [Double]
