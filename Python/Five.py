@@ -9,13 +9,12 @@ from itertools import *
 import matplotlib.pyplot as plt
 
 def main():
-    s_date = dt.datetime(2008, 1, 2)
-    e_date = dt.datetime(2008, 2, 1)
+    s_date = dt.datetime(2008, 1, 1)
+    e_date = dt.datetime(2008, 12, 31)
     lookback = 20
     print "Reading data..."
     data, symbols, timestamps = setup(s_date, e_date, lookback)
     upper_bol, lower_bol, indicator_bol = bol_band(data, symbols, timestamps, lookback, s_date)
-    print indicator_bol
     create_plots(symbols, data, upper_bol, lower_bol, indicator_bol)
 
 def create_plots(syms, data, ub, lb, ib):
@@ -39,18 +38,16 @@ def create_plots(syms, data, ub, lb, ib):
     plt.savefig('figure.pdf', format='pdf')
 
 def bol_band(data, syms, timestamps, lookback, s_date):
-    for sym in syms:
-        prices = data['close'][sym]
-        actual_start = s_date + dt.timedelta(days=lookback)
-        rm = pd.rolling_mean(prices, lookback).truncate(before=actual_start)
-        rstd = pd.rolling_std(prices, lookback).truncate(before=actual_start)
+    prices = data['close'][syms[0]]
+    rm = pd.rolling_mean(prices, lookback).truncate(before=s_date)
+    rstd = pd.rolling_std(prices, lookback).truncate(before=s_date)
     upper_bol_vals = []
     lower_bol_vals = []
     indicator_bol_vals = []
 
     for timestamp in rm.index:
-        upper_bol_val = (prices[timestamp] + rstd[timestamp])
-        lower_bol_val = (prices[timestamp] - rstd[timestamp])
+        upper_bol_val = (rm[timestamp] + 2 * rstd[timestamp])
+        lower_bol_val = (rm[timestamp] - 2 * rstd[timestamp])
         indicator_bol_val = (prices[timestamp] - rm[timestamp]) / rstd[timestamp]
         upper_bol_vals.append(upper_bol_val)
         lower_bol_vals.append(lower_bol_val)

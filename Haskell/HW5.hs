@@ -19,8 +19,10 @@ main =  do
             sma_data = Map.map (DP.slice lb end) $ Map.map (moving_average lb) p_data
                 where end = (length $ head $ Map.elems p_data) - 1
             mstd_data = Map.map (moving_std lb) p_data
-            bol_data = Map.mapWithKey (bol_band p_data mstd_data) sma_data
-        print bol_data
+            bol_data = Map.mapWithKey (bol_band price_slice mstd_data) sma_data
+                where price_slice = Map.map (DP.slice lb end) p_data
+                      end         = (length $ head $ Map.elems p_data) - 1
+        print $ length (head $ Map.elems p_data)
 
 bol_band :: Map.Map String [Double] -> Map.Map String [Double] -> String -> [Double] -> [Double]
 bol_band _ _ _ [] = []
