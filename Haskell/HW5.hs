@@ -36,16 +36,6 @@ moving_std n prices
     | length (take n prices) < n = []
     | otherwise  = [Stats.stddev $ take n prices] ++ moving_std n (tail prices)
 
---moving_std :: Int -> Map.Map String [Double] -> String -> [Double] -> [Double]
---moving_std n ma sym prices
---    | (length prices) < 20 = [] ++ moving_std n (Map.map tail ma) sym (tail prices)
---    | otherwise            = [(difference prices n $ head ma_prices)] ++ moving_std n (Map.map tail ma) sym (tail prices)
---        where ma_prices = fromMaybe [0.0] $ Map.lookup sym ma
---
---difference :: [Double] -> Int -> Double -> Double
---difference prices n ma = sqrt $ (sum $ map (\x -> x*x) differences) / (read (show n) :: Double)
---                         where differences = map (+ (-ma)) (take n prices)
-
 -- Code by Michael Orlitzky
 fst3 :: (a,b,c) -> a
 fst3 (x, _, _) = x
